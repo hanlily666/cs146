@@ -52,3 +52,9 @@ Thumbs.db
 
 # Vercel
 .vercel/*
+
+# Local Claude Code settings
+week1/.claude/
+
+# Secrets (never commit)
+.mcp.json
