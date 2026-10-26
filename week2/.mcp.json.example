@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "notion": {
+      "command": "/ABSOLUTE/PATH/TO/miniconda3/envs/cs146s/bin/python",
+      "args": ["-m", "notion_mcp.server"],
+      "env": {
+        "PYTHONPATH": "/ABSOLUTE/PATH/TO/weekly_assignment/week2",
+        "NOTION_CLIENT_ID": "${NOTION_CLIENT_ID}",
+        "NOTION_CLIENT_SECRET": "${NOTION_CLIENT_SECRET}"
+      }
+    }
+  }
+}

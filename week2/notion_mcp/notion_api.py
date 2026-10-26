@@ -74,6 +74,11 @@ def _id(notion_id: str) -> str:
     return quote(notion_id.strip(), safe="")
 
 
+def _text_content(text: str) -> dict:
+    # Body of a text block (paragraph, heading, ...) holding unformatted text.
+    return {"rich_text": [{"type": "text", "text": {"content": text}}]}
+
+
 class NotionAPI:
     def __init__(self, store: TokenStore | None = None, client: httpx.AsyncClient | None = None):
         self.store = store or TokenStore()
@@ -149,9 +154,6 @@ class NotionAPI:
         }
         return (await self._request("POST", "/search", json=body))["results"]
 
-    async def get_page(self, page_id: str) -> dict:
-        return await self._request("GET", f"/pages/{_id(page_id)}")
-
     async def get_block(self, block_id: str) -> dict:
         return await self._request("GET", f"/blocks/{_id(block_id)}")
 
@@ -162,16 +164,22 @@ class NotionAPI:
         return await self._request("GET", f"/blocks/{_id(block_id)}/children", params=params)
 
     async def update_block_text(self, block_id: str, block_type: str, text: str) -> dict:
-        body = {block_type: {"rich_text": [{"type": "text", "text": {"content": text}}]}}
+        body = {block_type: _text_content(text)}
         return await self._request("PATCH", f"/blocks/{_id(block_id)}", json=body)
 
-    async def append_children(
-        self, parent_id: str, blocks: list[dict], after_block_id: str | None = None
-    ) -> dict:
-        body: dict = {"children": blocks}
+    async def append_text_blocks(
+        self, parent_id: str, block_type: str, texts: list[str], after_block_id: str | None = None
+    ) -> list[str]:
+        """Insert one plain-text block per item in texts; return the new block IDs."""
+        children = [
+            {"object": "block", "type": block_type, block_type: _text_content(t)} for t in texts
+        ]
+        body: dict = {"children": children}
         if after_block_id:
             body["position"] = {"type": "after_block", "after_block": {"id": after_block_id}}
-        return await self._request("PATCH", f"/blocks/{_id(parent_id)}/children", json=body)
+        resp = await self._request("PATCH", f"/blocks/{_id(parent_id)}/children", json=body)
+        # With `after`, Notion returns the new blocks followed by every later sibling.
+        return [b["id"] for b in resp.get("results", [])[: len(texts)]]
 
     async def delete_block(self, block_id: str) -> dict:
         return await self._request("DELETE", f"/blocks/{_id(block_id)}")

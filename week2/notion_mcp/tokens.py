@@ -45,6 +45,8 @@ def client_credentials() -> tuple[str, str]:
 
 def tokens_from_response(data: dict, previous: Tokens | None = None) -> Tokens:
     """Build Tokens from a /v1/oauth/token response, keeping fields the response omits."""
+    if "access_token" not in data:
+        raise AuthError("Notion's token response had no access_token")
     return Tokens(
         access_token=data["access_token"],
         refresh_token=data.get("refresh_token") or (previous and previous.refresh_token),
