@@ -1,6 +1,7 @@
 ---
 name: repo-onboarding
 description: "Onboard a developer or non-coder onto an unfamiliar repository: set it up locally, explain its architecture, and point to where to start. Use when the user is new to a repo, wants diagrams of its architecture, data flow, or data shapes, or wants to start contributing."
+disable-model-invocation: true
 ---
 
 # Repo Onboarding
